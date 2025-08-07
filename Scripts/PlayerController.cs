@@ -13,6 +13,13 @@ public class PlayerController : MonoBehaviour
     public bool isLockedOn = false;
     public Transform currentTarget;
 
+    
+    [Header("Crosshair")]
+    public CrosshairIndicator crosshairPrefab;
+    public Vector3 crosshairOffset = new Vector3(0f, 2f, 0f);
+    public Color crosshairColor = Color.red;
+    private CrosshairIndicator activeCrosshair;
+
     private Coroutine alignCoroutine;
 
     private void Update()
@@ -103,19 +110,46 @@ public class PlayerController : MonoBehaviour
 
     public void SetTarget(Transform target)
     {
+        // Remove existing crosshair
+        if (activeCrosshair != null)
+        {
+            Destroy(activeCrosshair.gameObject);
+            activeCrosshair = null;
+        }
+
         currentTarget = target;
         isLockedOn = target != null;
-        if (!isLockedOn)
+
+        if (isLockedOn)
         {
-            alignCoroutine = null;
+            // Create new crosshair for this target
+            if (crosshairPrefab != null)
+            {
+                activeCrosshair = Instantiate(crosshairPrefab, target.position + crosshairOffset, Quaternion.identity);
+                activeCrosshair.Initialize(target, crosshairColor, crosshairOffset);
+            }
         }
-    }
+        else
+        {
+            if (alignCoroutine != null)
+            {
+                StopCoroutine(alignCoroutine);
+                alignCoroutine = null;
+            }
+        }
 
     public void ClearTarget()
     {
         currentTarget = null;
         isLockedOn = false;
-        if (alignCoroutine != null)
+     
+                // Destroy crosshair when clearing target
+        if (activeCrosshair != null)
+        {
+            Destroy(activeCrosshair.gameObject);
+            activeCrosshair = null;
+        }
+if (alignCoroutine != null)
         {
             StopCoroutine(alignCoroutine);
             alignCoroutine = null;
