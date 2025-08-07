@@ -1,0 +1,79 @@
+Zwischenstand (07.08.2025, 13:00 Uhr)
+
+Kurzer Überblick (offene Punkte):
+- Auswahl und Integration eines Netzwerk-Frameworks (Mirror, Netcode for GameObjects, Photon) einschließlich der Architekturentscheidung (Client/Server vs. Cloud) und grundlegender Synchronisation.
+- Definition der Levelthemen (Fabrik, Mine, Ödland, evtl. weitere), Festlegung der jeweiligen visuellen Atmosphäre, Gegner und Rätsel pro Umfeld.
+- Ausarbeitung der Gegner-Archetypen (Banditen, Cyborgs, Roboter, Mutanten, Tiere), inklusive Verhalten, Stats und Spezialfähigkeiten.
+- Konstruktion des ersten spielbaren Levels („Fabrik“), einschließlich Layout, Kamerapunkten und Gegnerplatzierung.
+- Implementierung eines netzwerkfähigen Koop-Modus; Auswahl des Frameworks; erster Netzwerk-Prototyp.
+- Design eines Hub-/Basis-Bereichs für Kaufen, Verkaufen, Handwerk, Lagerung und Handel zwischen Spielern.
+- Ergänzungen: Erstellen von UI-Assets, Partikel- und Soundeffekten, Balancing der Fähigkeiten, weitere Waffen- und Fähigkeitenvarianten, persistente Progression und Savegames.
+
+Detaillierter Fortschrittsbericht:
+
+1. Konzept & Planung:
+- Nach ersten Brainstormings wurde die Kernmechanik festgelegt: Ein top-down Action-RPG mit fester Kamera und Bewegung ausschließlich über Tastatur wie in „Parasite Eve“. W (vor), S (rückwärts, langsamer), A/D (drehen) bilden den „Tank-Control“-Modus, TAB visiert Gegner an, woraufhin die Steuerung in einen Strafe-Modus wechselt, der das Umkreisen bei verringerter Geschwindigkeit erlaubt.
+- PvP wurde verworfen; Fokus liegt auf Koop-PvE. Ziel ist eine synergiebasierte Spielerfahrung, bei der moderne Waffen und „Magie“ in Form nanotechnischer Fähigkeiten kombiniert werden. 
+- Ein 6-monatiger Entwicklungsrahmen wurde definiert; Feature-Creep soll vermieden werden. Als Spielbasis dient eine Serie von missionenbasierten Leveln mit Belohnungen, optionalen Bosskämpfen und einem zentralen Hub.
+
+2. Projektorganisation:
+- Es wurde ein GitHub Projects-Kanban-Board erstellt. Die Aufgaben wurden in Backlog und Ready unterteilt, mit klaren Titeln und ausführlichen Beschreibungen. Fehleinträge und Dubletten wurden entfernt.
+- Es wurden Tickets für alle Kernaufgaben (Bewegung, Lock-On, Strafe, Kamera, Netcode, Leveldesign, Gegnerdefinition, Loadouts, Koop-Integration, dynamische Schwierigkeit, Loot/Inventar, Währung/XP, Crosshair, Nano-Fähigkeit) angelegt. 
+- Die Aufgaben wurden möglichst kleinteilig formuliert, um Fortschritt sichtbar zu machen und die Entwicklung schätzbar zu halten.
+
+3. Repositories:
+- Für das Spiel wurde das Repository **unity-prototype** angelegt. In diesem befinden sich alle aktuellen C#-Skripte. 
+- Zusätzlich wurde ein eigenes Repository **todo-calendar** erstellt und eine simple To-Do-App darin entwickelt (HTML/JS/CSS). Diese separate App dient nur als Übung und wurde via GitHub Pages veröffentlicht.
+
+4. Implementierte Kernfunktionalitäten (unity-prototype):
+
+- **PlayerController.cs (Ticket #1–4, #15):**
+  - Steuerung mit W/S (Vorwärts/Rückwärts), wobei Rückwärtsbewegung halbe Geschwindigkeit nutzt; A/D zum Drehen.
+  - Strafe-Modus beim Lock-On: Der Spieler kann das Ziel umkreisen, wobei horizontale und vertikale Eingaben zum seitlichen Bewegen relativ zur aktuellen Ausrichtung verwendet werden und die Figur sich automatisch dem Ziel zuwendet【761474294993959†L31-L46】.
+  - Bei Stillstand (0,5 s) richtet sich die Figur per Coroutine automatisch komplett zum Ziel aus und ermöglicht präzise Schüsse【761474294993959†L75-L108】.
+  - Implementierung der Lock-On-Ausrichtung: `SetTarget` ordnet ein neues Ziel zu, löscht alte Zielmarkierungen, instanziiert ein Crosshair über dem Ziel und startet die Ausrichtungsroutine【761474294993959†L110-L129】. `ClearTarget` entfernt das Ziel, stoppt die Ausrichtungsroutine und zerstört das Crosshair【761474294993959†L140-L156】.
+
+- **TargetingSystem.cs (Ticket #2):**
+  - Sammelt alle Gegnerobjekte per Tag, filtert nach Distanz und sortiert sie. Drücken von TAB ruft `AcquireTargets` und `CycleTarget` auf.
+  - `CycleTarget` durchläuft zyklisch alle in Reichweite befindlichen Gegner und ruft `PlayerController.SetTarget` auf; `ClearTarget` löscht die Auswahl【249032022584148†L21-L49】.
+
+- **CameraTeleporter.cs (Ticket #4):**
+  - Überwacht im festen Zeitintervall (checkInterval) die Position des Spielers im Kamera-Viewport.
+  - Verlässt der Spieler den sichtbaren Bereich, wird der nächstgelegene Kamerapunkt gesucht (außer dem aktuellen) und die Kamera dorthin teleportiert【375134856829892†L32-L60】.
+  - Startet im ersten Kamerapunkt und übernimmt dessen Position/Ausrichtung【375134856829892†L13-L19】.
+
+- **LoadoutSystem.cs (Ticket #9):**
+  - Definiert `Loadout` mit Name, Waffenprefab und bis zu vier Ability-Slots.
+  - `EquipLoadout` zerstört das aktuell ausgerüstete Waffenobjekt, instanziiert das neue Waffenprefab am „Weapon Mount Point“ und speichert die Fähigkeiten-Slots; im Update werden die entsprechenden Tasten abgefragt und die Ability aktiviert【904776992790552†L25-L54】.
+
+- **Ability.cs und NanoAbility.cs (Ticket #9, #16):**
+  - `Ability` ist ein abstraktes ScriptableObject mit Name und Cooldown.
+  - `NanoAbility` implementiert `Activate(GameObject user)`: Instanziiert ein Partikel-System an der Spielerposition, spielt es ab und zerstört es nach `effectDuration` Sekunden【287149190904277†L11-L21】.
+
+- **CrosshairIndicator.cs (Ticket #15):**
+  - Beim Lock-On instanziiert der PlayerController ein CrosshairIndicator-Prefab; dieses Script speichert Ziel, Offset und Farbe, folgt dem Ziel in `LateUpdate` und zerstört sich, wenn das Ziel verschwindet【129149509481030†L8-L32】.
+
+- **Item.cs, InventorySystem.cs, LootSystem.cs (Ticket #13):**
+  - `Item` ist ein ScriptableObject mit Name, Icon und Beschreibung.
+  - `InventorySystem` verwaltet eine Liste von Items (max. Slots) mit `AddItem`/`RemoveItem`【163025354731110†L3-L19】.
+  - `LootSystem` enthält eine Liste möglicher Items und eine Drop-Chance; `GetRandomLoot` entscheidet, ob ein Item droppen soll, und wählt ein zufälliges【410348822827940†L16-L33】; `DropLoot` loggt den Gegenstand (Platzhalter für späteres Spawnen).
+
+- **CurrencyManager.cs (Ticket #14):**
+  - Verwalter für Credits und Erfahrungspunkte; stellt Methoden `AddCredits`, `SpendCredits` und `AddExperience` bereit. Level-Up-Logik ist als To-do markiert【258174301166769†L15-L46】.
+
+- **DifficultyManager.cs (Ticket #11):**
+  - Singleton, das für jede zusätzliche Person die Multiplikatoren für Gegner-Gesundheit, Schaden und Anzahl berechnet.
+  - `GetScaledHealth/Damage/Count` ermitteln skalierte Werte auf Basis der aktiven Spielerzahl【179209025601607†L32-L59】.
+  - `GetPlayerCount` zählt alle aktiven PlayerController-Instanzen in der Szene.
+
+- Weitere unterstützende Skripte und Dateien wie `Ability.cs`, `Item.cs`, `CameraTeleporter.cs`, etc. liegen bereit und bilden die Basis für weitere Erweiterungen.
+
+5. Weitere Aktivitäten:
+- Es wurden (als Nebenprojekt) Tasks und Code für eine simple To-Do-App erstellt (Repo `todo-calendar`); HTML/JS/CSS implementiert: Eingabefeld, Aufgabenliste, Persistenz via Local Storage, Abhaken und Löschen. Diese App wurde via GitHub Pages veröffentlicht.
+- Während der Ticketpflege wurden mehrere Boards und Draft-Issues in GitHub Projects verwaltet; alte Karten gelöscht und neue strukturiert angelegt; zu allen offenen Aufgaben wurden detaillierte Beschreibungen hinzugefügt.
+
+6. Tests und Deployment:
+- Für die To-Do-App wurde GitHub Pages aktiviert; der Build läuft via GitHub Actions; die App ist unter `coder-viking.github.io/todo-calendar` erreichbar.
+- Das Unity-Projekt selbst kann noch nicht ausgeführt werden, da Unity als Entwicklungsumgebung nicht im Codespace verfügbar ist. Die Skripte sind jedoch modular und folgen Best Practices (Trennung von Eingabe, Logik, Rendering). Öffentliche Felder und `[SerializeField]` erleichtern das spätere Zuweisen von Objekten im Unity Editor.
+
+Damit ist der Zwischenstand dokumentiert. Der Fokus der nächsten Wochen sollte auf den offenen Punkten liegen (Netcode, Leveldesign, Gegnerdefinition, Hub-Bereich) sowie auf dem Iterieren des Prototyps, um das Spielgefühl zu testen und Feedback einzuholen.
