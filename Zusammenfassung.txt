@@ -1,0 +1,60 @@
+Gesamtfortschritt Unity-Prototyp – detaillierte Zusammenfassung (Stand: 11.08.2025)
+
+1. Konzept und Planung:
+- Nach Brainstorming wurde ein top-down Action-RPG mit fester Kamera und Tank-Controls festgelegt. Der Spieler bewegt sich mit W (vorwärts), S (rückwärts, langsamer) und dreht mit A/D. Mit TAB visiert er ein Ziel an und kann es im Strafe-Modus umkreisen, wobei sich die Figur automatisch ausrichtet.
+- PvP wurde verworfen; der Fokus liegt auf kooperativem PvE mit modernen Waffen und nanotechnischen Fähigkeiten.
+- Es wurde ein 6-monatiger Entwicklungsrahmen gesetzt, um Feature Creep zu vermeiden. Das Spiel wird missionenbasierte Level, optionale Bosse und einen zentralen Hub bieten.
+
+2. Offene Aufgaben:
+- Auswahl und Integration eines Netzwerk-Frameworks (Mirror, Netcode for GameObjects, Photon) sowie Entscheidung über Client-/Server-Architektur.
+- Definition der Levelthemen (Fabrik, Mine, Ödland usw.) und Ausarbeitung der Gegner-Archetypen (Banditen, Cyborgs, Roboter, Mutanten, Tiere).
+- Erstellung des ersten spielbaren Levels („Fabrik“) mit Layout, Kamerapositionen und Gegnern.
+- Implementation eines netzwerkfähigen Koop-Modus sowie eines Hub-/Basisbereichs für Handel, Crafting und Missionsauswahl.
+- Erstellung von UI-Assets, Partikel- und Soundeffekten, Balancing, Waffenvarianten, Persistenz und Savegames.
+
+3. Projektorganisation:
+- Ein GitHub Projects Kanban-Board wurde eingerichtet. Aufgaben für Bewegung, Lock-On, Strafe, Kamera, Netcode, Leveldesign, Gegnerdefinition, Loadouts, Koop, dynamische Schwierigkeit, Loot/Inventar, Währung/XP, Crosshair und Nano-Fähigkeit wurden als Tickets angelegt.
+- Das Backlog und Ready-Board wurden aufgeräumt; Dubletten wurden entfernt. Eine klare Aufgabenteilung ermöglicht eine bessere Schätzbarkeit.
+- Ein separates Repository „todo-calendar“ wurde erstellt, in dem eine To-Do-App (HTML/JS/CSS) umgesetzt und via GitHub Pages veröffentlicht wurde.
+
+4. Implementierte Kernfunktionalitäten:
+- PlayerController.cs: Implementiert Tank-Controls (Vorwärts/Rückwärts mit unterschiedlicher Geschwindigkeit, Drehung), Strafe-Modus beim Lock-On, automatische Ausrichtung und Erzeugung/Zerstörung des Crosshairs.
+- TargetingSystem.cs: Sammelt Gegner per Tag, sortiert sie nach Entfernung und wechselt per Tab zum nächsten Ziel; ruft SetTarget/ClearTarget im PlayerController auf.
+- CameraTeleporter.cs: Überwacht den Spieler im Viewport und teleportiert die Kamera zum nächsten vordefinierten Kamerapunkt, wenn der Spieler den Bildschirm verlässt.
+- LoadoutSystem.cs: Definiert Loadouts mit Waffenprefab und Ability-Slots; instanziiert Waffen am Weapon Mount Point, verwaltet Ability Slots und aktiviert Fähigkeiten per Tasten.
+- Ability.cs & NanoAbility.cs: Abstraktes ScriptableObject für Fähigkeiten (Name, Cooldown). NanoAbility spawnt ein Partikelsystem am Spieler und zerstört es nach Ablauf.
+- CrosshairIndicator.cs: Verwaltet das Lock-On-Crosshair; folgt dem Ziel in LateUpdate und zerstört sich, wenn das Ziel verschwindet.
+- Item.cs, InventorySystem.cs, LootSystem.cs: Definiert Items als ScriptableObjects, verwaltet Inventar-Slots und simuliert Loot mit Drop-Chance und zufälliger Auswahl.
+- CurrencyManager.cs: Verwaltung von Credits und Erfahrungspunkten mit Add/Spend-Funktionen.
+- DifficultyManager.cs: Skaliert Gegner-Gesundheit, Schaden und Anzahl basierend auf der Spielerzahl.
+
+5. Mirror-Netcode & Multiplayer:
+- Wir analysierten Mirror, Netcode for GameObjects und Photon. Mirror wurde als geeignetes Framework für den Prototyp gewählt, da es Open-Source ist, gute Unity-Integration bietet und keine laufenden Gebühren verursacht.
+- Zur Entkopplung der Netzwerkschicht wurde das Interface INetworkAdapter definiert, das Methoden wie StartHost, StartClient, Spawn und RegisterPrefab bereitstellt.
+- MirrorNetworkAdapter.cs implementiert dieses Interface für Mirror und kapselt NetworkManager-Aufrufe.
+- NetworkSessionManager.cs kapselt Starten und Stoppen von Host/Client und verwaltet die Netzwerk-Sitzung.
+- NetworkLobbyManager.cs erbt von NetworkRoomManager und überschreibt Server-Callbacks wie OnRoomServerPlayersReady und OnRoomServerDisconnect, um Lobby-Verhalten anzupassen.
+- NetworkPlayerController.cs ist der netzwerkfähige Nachfolger des PlayerControllers. Er verarbeitet Eingaben nur lokal (isLocalPlayer), sendet Befehle via [Command] an den Server und synchronisiert Lock-On-Status und Ziel über SyncVars. Bewegungen, Rotationen, Strafen und das Rotieren zum Ziel erfolgen über Commands.
+- Die Netzwerkvariante wurde als Player Prefab registriert und das bestehende PlayerController-Prefab ersetzt.
+
+6. Mirror-Import & Setup:
+- Die Mirror-Integration bereitete zunächst Probleme, da das GitHub-Repo keine package.json enthielt. Die zuverlässigste Lösung war, Mirror aus dem Unity Asset Store zu importieren.
+- Alternativ kann Mirror über OpenUPM bezogen werden, indem im manifest.json der entsprechende Paket-Eintrag hinterlegt wird.
+- Nach dem Import wurde die veraltete Methode OnRoomServerPlayerLeave() durch die aktuelle OnRoomServerDisconnect() ersetzt, um Lobby-Callbacks korrekt zu behandeln.
+
+7. Weitere Hilfsfunktionen:
+- CameraSwitcherTrigger: Ein Trigger-Script, das beim Betreten eines Collider-Bereichs die Hauptkamera auf eine zugewiesene Transform-Position setzt. Optional wird ein weicher Übergang mittels Coroutine realisiert.
+- Debugging-Tipps: Bei unsichtbaren Spielern sollten Mesh Renderer, Skalierung, Kamera-Ausrichtung und NetworkTransform geprüft werden. Logging in OnStartLocalPlayer hilft, Spawn-Positionen nachzuvollziehen.
+
+8. Offene Aufgaben & nächste Schritte:
+- Weiterentwicklung des Leveldesigns, inklusive erster spielbarer Prototyp-Level (Fabrik).
+- Implementierung der Gegner-Archetypen und ihrer KI.
+- Aufbau eines Hub-Bereichs für Handel, Crafting und Missionsauswahl.
+- Entwicklung eines Lobbysystems für Koop-Sitzungen mit Einladungen, Public/Private-Optionen und Passwort.
+- Erstellung von UI-Elementen, Partikeleffekten, Sounddesign und Balancing.
+- Einführung eines persistierenden Fortschrittssystems und Savegames.
+
+9. Fazit:
+- In kurzer Zeit wurden Konzept, Kernmechanik und eine Vielzahl von Gameplay-Skripten umgesetzt. Das Projekt ist strukturiert organisiert und bereit für die nächste Phase.
+- Die Netzwerkintegration wurde mit einer modularen Abstraktionsschicht und Mirror-spezifischen Implementierungen vorbereitet. Der NetworkPlayerController ersetzt den lokalen Controller in Multiplayer-Sessions.
+- Die nächsten Meilensteine liegen im Leveldesign, der Gegnerentwicklung und der Fertigstellung des Koop-Hubs sowie der Benutzeroberfläche.
