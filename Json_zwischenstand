@@ -1,0 +1,252 @@
+{
+  "meta": {
+    "timestamp_berlin_iso": "2025-08-14T16:09:19+02:00",
+    "display_time": "14. August 2025, 16:09 Uhr (Berlin)",
+    "project": "Unity – Parasite-Eve-inspiriertes Koop/Solo-Spiel",
+    "world_state": "B_Teilkollaps_light",
+    "atmosphere": "Drückend, wenige aber gefährliche Gegner, keine Horden",
+    "loop": "Hub → Mission → Hub"
+  },
+  "hub_and_missions_rules": {
+    "hub": {
+      "allows_skill_point_allocation": true,
+      "allows_crafting": true,
+      "allows_equipment_purchase": true,
+      "vendors": {
+        "medical_vendor": {
+          "sells": ["Bandage", "Kleines Medkit", "Antiseptikum", "Antidot"],
+          "excludes": ["Trauma-Kit", "Revive-Protokoll", "Auto-Injector"],
+          "per_mission_limit": true,
+          "instanced_per_player": true
+        }
+      },
+      "auction_orders_terminal": {
+        "enabled": true,
+        "description": "Spieler stellen Craft-Aufträge ein; Engineer (Gunsmith) fertigt und liefert; kleine Marktabgabe"
+      }
+    },
+    "missions": {
+      "crafting_enabled": false,
+      "skill_point_allocation_enabled": false,
+      "loadout_origin": "Snapshot aus dem Hub-Loadout",
+      "skilltrees_object": "Alle Skillwerte/Perks werden beim Missionsstart aus dem Hub-Char übernommen und als schreibgeschütztes Objekt auf den Charakter angewandt",
+      "vendor_access": "deaktiviert (außer missionsspezifische Drops/Container)"
+    }
+  },
+  "visibility_multiplayer": {
+    "shared_hub_layout": true,
+    "client_side_station_visuals": true,
+    "mission_state_follows_host": true,
+    "rewards_account_bound": true,
+    "zone_changes_primary_to_host": true
+  },
+  "progression": {
+    "no_core_stats": ["STR","DEX","STA"],
+    "level_cap": 30,
+    "hp_per_level": 5,
+    "hp_level_1": 100,
+    "hp_level_30": 245,
+    "future_cap_increase_possible": true,
+    "gating": {
+      "workbench_t2_min_level": 10,
+      "workbench_t3_min_level": 18,
+      "workbench_t4_min_level": 26
+    },
+    "respec": {
+      "class_selection_level": 3,
+      "free_respec_until_level": 6,
+      "free_respec_cooldown_hours": 1,
+      "paid_respec_from_level": 7,
+      "paid_respec_cooldown_hours": 24,
+      "paid_respec_cost_tbd": true,
+      "noncompatible_items_after_respec": "bleiben erhalten, Nutzung gesperrt bis passende Spezialisierung aktiv"
+    }
+  },
+  "combat_balancing": {
+    "armor_mitigation": { "light": 0.10, "medium": 0.20, "heavy": 0.35 },
+    "damage_growth_source": ["Weapon_Base", "Mods", "Ammo"],
+    "damage_mod_total_cap": 0.20,
+    "tradeoffs_required": true,
+    "ttk_guidelines": {
+      "enemy_unarmored_body": "2–5 Treffer",
+      "enemy_weakpoint": "1–2 präzise Treffer",
+      "player_hits_till_down": "2–4 von ernsthaften Gegnern (ohne starke Rüstung)"
+    },
+    "priority": ["Stealth", "Licht/Lärm", "Positionierung", "Weakpoints"]
+  },
+  "classes": {
+    "soldier": {
+      "weapons": "mittlere Waffen",
+      "armor": "mittel",
+      "healing": "leicht",
+      "specializations_l3": {
+        "tank": {
+          "weapons": "mittlere (Shotgun-Fokus)",
+          "armor": "schwer + Schild",
+          "healing": "keine",
+          "keystone": "Bulwark (2 s nach Schildheben −50% Schaden, CD)"
+        },
+        "commando": {
+          "weapons": "schwere (LMG, Spezialmun.)",
+          "armor": "mittel",
+          "healing": "keine",
+          "keystone": "Fire Lane (Suppression auf Sichtachse beim Anlehnen)"
+        },
+        "veteran_t4": {
+          "tier": 4,
+          "weapons": "mittlere+",
+          "armor": "mittel+",
+          "healing": "leichte Self-Heals behalten",
+          "keystone": "Combat Poise (nach sauberem Reload 3 s weniger Sway/Jam-Immun)"
+        }
+      }
+    },
+    "scout": {
+      "trapper_integrated": true,
+      "weapons": "leichte Waffen",
+      "armor": "leicht",
+      "healing": "mittel",
+      "passives": ["schnellste Bewegung", "Nachladen im Laufen"],
+      "specializations_l3": {
+        "infiltrator": {
+          "theme": "leise Wege/Umgehung",
+          "healing_role": "gute Self-Heals, kaum Team-Heal",
+          "keystone": "Shadow Entry (erste Tür/Kamera ohne Alarm)"
+        },
+        "saboteur": {
+          "theme": "Fallen/Kontrolle/EMP/Stabi-Schaum",
+          "healing_role": "Stabilisieren > Heilen",
+          "keystone": "Choke Point (1 Falle pro Einsatz verstärkt)"
+        },
+        "ranger_t4": {
+          "tier": 4,
+          "theme": "Aufklärung/Mobility",
+          "keystone": "Mobility Harness (bessere Sprint-Erholung, +Micro-Recon)"
+        }
+      }
+    },
+    "medic": {
+      "weapons": "leichte Waffen",
+      "armor": "leicht",
+      "healing": "stärkste Heilschemata",
+      "revive": true,
+      "specializations_l3": {
+        "field_surgeon": {
+          "role": "Peak-Heals, Debuff-Clear, starker Revive",
+          "keystone": "Gold Standard (1 Revive/Run entfernt zusätzlich 1 Debuff)"
+        },
+        "combat_medic": {
+          "role": "Heilen in Bewegung, AoE-Stabilisierung, schneller aber schwächerer Revive",
+          "keystone": "Battle Triage (5 s Resist nach Revive fürs Ziel)"
+        },
+        "chief_medic_t4": {
+          "tier": 4,
+          "role": "Effizienz/Safeguards",
+          "keystone": "Safeguard (Revive verleiht 3 s Anti-Stagger)"
+        }
+      }
+    },
+    "engineer": {
+      "role": "Crafter/Ökonomie/Tech; Kampf ≈ Medic oder darunter",
+      "weapons": "leichte Waffen (keine schweren/LMG)",
+      "armor": "leicht",
+      "specializations_l3": {
+        "gunsmith": {
+          "can_craft_all_class_weapons": true,
+          "equip_restrictions": "darf nicht alles selbst tragen",
+          "cost_discounts": { "mechanik": -0.20, "elektronik": -0.15, "chem": -0.10, "generic": -0.10 },
+          "masterwork": {
+            "chance_t3": 0.12,
+            "chance_t4": 0.25,
+            "possible_bonuses": ["+1 Mod-Slot", "Haltbarkeit +25%", "Jam-Rate −30%", "kleine Vorinstall-Mod"],
+            "signature_trade_value_bonus": 0.05
+          },
+          "t4_mastery": {
+            "name": "Master Gunsmith",
+            "extra": ["+10 Prozentpunkte Masterwork-Chance", "Präzisions-Finish (+ADS-Ready oder −Sway)", "1 Free Work Order/Tag"]
+          }
+        },
+        "systems_hacker": {
+          "role": "Hacking/Blackout/Alarmdämpfung",
+          "blackout": { "duration_seconds": 8, "charges_per_mission": 1 },
+          "t4_mastery": { "name": "Chief Operator (Systems)", "extra": ["+1 Charge oder größere Reichweite", "langsameres Kamera-Reboot"] }
+        },
+        "forensics_tech": {
+          "role": "Scans/Recycler/Smelter",
+          "scan_bonus": "erster Indiz-Scan instant & hochwertig",
+          "smelter_efficiency_bonus": true,
+          "byproduct_chance_bonus": true,
+          "t4_mastery": { "name": "Chief Operator (Forensics)", "extra": ["Tageslimit-DR höheres Cap", "+10% Effizienz"] }
+        }
+      },
+      "economy_tools": {
+        "auction_orders": true,
+        "field_disassembly": true
+      },
+      "crafting_xp": {
+        "engineer_gain": "voll",
+        "others_gain_factor": 0.25,
+        "sources": {
+          "weapons": "Basis-XP × Waffentyp (Pistol 1×, AR/Shotgun 2×, LMG 3×)",
+          "mods_ammo": "0.25×–0.5×",
+          "smelter": "+1 XP pro 50 Generic (mit DR)",
+          "scan_blackout": "+2 XP"
+        },
+        "daily_soft_cap": true
+      }
+    }
+  },
+  "workbench_and_medical": {
+    "single_workbench_with_branches": true,
+    "medical_is_branch_not_station": true,
+    "healing_rules": {
+      "all_branches_basic_heal": true,
+      "trauma_debuff_clear_only_medic": true,
+      "revive_only_medic_t3plus": true,
+      "veteran_soldier_keeps_light_self_heal": true
+    },
+    "blueprints": {
+      "account_bound": true,
+      "tradeable_products": ["Gadgets", "Consumables", "Munition", "Waffen (inkl. Masterworks)"],
+      "non_tradeable": ["Blueprints", "Branch-Freischaltungen"]
+    }
+  },
+  "economy": {
+    "resource_families": ["Generic", "Mechanik", "Elektronik", "Chem", "Bio"],
+    "host_drop_affinities_proposal": {
+      "enabled": false,
+      "note": "war Vorschlag; noch nicht final"
+    }
+  },
+  "smelter_recycler": {
+    "t1_rates_generic_to_one": { "mechanik": 40, "elektronik": 50, "chem": 60, "bio": 70 },
+    "tier_multipliers": { "t1": 1.0, "t2": 0.8, "t3": 0.6, "t4": 0.5 },
+    "byproduct_chance": { "t2": 0.10, "t3": 0.20, "t4": "regelmäßig/garantiert periodisch" },
+    "heat_noise_meter": true,
+    "daily_diminishing_returns": { "step_per_100_converted_generic": 0.10 },
+    "conversion_time_and_queue": true,
+    "abort_refund_ratio": 0.9
+  },
+  "mission_types": [
+    "Forensics Run (4–6 Indizien, Risiko durch Lärm/Licht/Sichtbarkeit)",
+    "Silent Extraction (Alarm ⇒ Stalker/Zeitdruck statt Wellen)",
+    "Dark Sector (Stromsequenz, Taschenlampen/Notlichter)",
+    "Specimen Capture (lebend sichern; Fallen/Betäubung; Nemesis-Faden möglich)",
+    "Sabotage/Stilllegung (illegales Mini-Labor entschärfen)",
+    "Säuberung (Areal komplett + Nest thermisch versiegeln; 3 kurze harte Begegnungen + Timer)"
+  ],
+  "ui_netcode": {
+    "personal_layer_visuals": true,
+    "server_authoritative_interactions": ["Crafting", "Käufe", "Rewards"],
+    "shop_instanced_per_player": true,
+    "invalid_gear_highlight_after_respec": true
+  },
+  "tbd": {
+    "paid_respec_cost_model": "Ressourcenpaket oder Training-Voucher",
+    "damage_mod_total_cap_exact_value": 0.20,
+    "engineer_presence_bonus_generic_drops": { "proposal": "+10%", "accepted": false },
+    "host_drop_affinities": { "proposal": true, "accepted": false },
+    "endgame_axes": ["Nemesis", "Community-Goals", "Zonenstabilität (rotierend)"]
+  }
+}
+```0
